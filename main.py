@@ -1,6 +1,8 @@
 # Неевин Кирилл P3213
 # Вариант 11
+
 from collections import defaultdict
+from functools import reduce
 from math import log
 from prettytable import PrettyTable
 import matplotlib.pyplot as plt
@@ -24,6 +26,7 @@ def main():
     print(f'Первая и последняя порядковая статистика (макс. и мин. значения): {sorted_data[0]} и {sorted_data[-1]}')
     print(f'Размах: {sorted_data[-1] - sorted_data[0]:.2f}')
 
+    print()
     print('Статистический ряд (сколько элементов в выборке):')
     count_set = defaultdict(int)
     for x in sorted_data:
@@ -36,31 +39,28 @@ def main():
 
     avg = sum(data) / len(data)
     print('Выборочное среднее:', avg)
-
-    dispersion = 0
-    for x in data:
-        dispersion += (x - avg) ** 2
+    dispersion = reduce(lambda d, val: d + (val - avg)**2, data, 0)
     print('Дисперсия:', dispersion)
     print('СКО:', dispersion ** 0.5)
 
-    print('Эмпирическая функция:')
+    print()
     plt.subplot(5, 1, 1)
-    plt.title('График эмпирической функции распределения')
-    n = len(count_set)
-    keys = list(count_set.keys())
-    y = 0
-    print(f'\t\t/ {round(y, 2)}, при x <= {keys[0]}')
+    plt.title('Эмпирическая функции распределения')
+    n, keys, y = len(count_set), list(count_set.keys()), 0
+
+    print('Эмпирическая функция:')
+    print(f'{round(y, 2)}, при x <= {keys[0]}')
     for i in range(n - 1):
         y += count_set[keys[i]] / n if i < n else 0
-        left = 'F*(x) = ' if i == n / 2 else '\t\t'
-        print(f'{left}| {round(y, 2)}, при {keys[i]} < x <= {keys[i + 1]}')
-        plt.plot([keys[i], keys[i + 1]], [y, y], c='black')
-    print(f'\t\t\\ {round(y, 2)}, при {keys[-1]} < x')
+        print(f'{round(y, 2)}, при {keys[i]} < x <= {keys[i + 1]}')
+        plt.plot([keys[i], keys[i + 1]], [y, y], c='orange')
+    print(f'{round(y, 2)}, при {keys[-1]} < x')
 
+    print()
     print('Интервальное статистическое распределение:')
-    h = round((sorted_data[-1] - sorted_data[0]) / (1 + round(log(n, 2))), 2)
-    curr_x = round(sorted_data[0] - h / 2, 2)
-    next_x = round(curr_x + h, 2)
+    h = round((sorted_data[-1] - sorted_data[0]) / (1 + round(log(n, 2))), 2)  # ширина столбца гистограммы
+    curr_x = round(sorted_data[0] - h / 2, 2)  # начало стоблца гистограммы
+    next_x = round(curr_x + h, 2)  # конец стоблца гистограммы
     grouped_data = {curr_x: 0}
     for x in sorted_data:
         if x < next_x:
@@ -70,19 +70,21 @@ def main():
             curr_x = next_x
             next_x = round(next_x + h, 2)
     table = PrettyTable()
-    table.field_names = (f'[{round(x, 2)}; {round(x + h, 2)})' for x in grouped_data.keys())
+    table.field_names = (f'[{x:.2f}; {x+h:.2f})' for x in grouped_data.keys())
     table.add_row(list(round(x, 2) for x in grouped_data.values()))
     print(table)
 
     plt.subplot(5, 1, 3)
     plt.title('Полигон частот')
-    plt.plot(list(grouped_data.keys()), list(grouped_data.values()), c='black')
+    plt.plot(list(grouped_data.keys()), list(grouped_data.values()), c='orange')
 
     plt.subplot(5, 1, 5)
     plt.title('Гистограмма частот')
-    plt.bar(list(map(lambda x: x + h / 2, grouped_data.keys())), list(grouped_data.values()), width=h)
+    plt.bar(list(map(lambda x: x + h / 2, grouped_data.keys())), list(grouped_data.values()), width=h, color='orange')
     xticks = list(grouped_data.keys()) + [round(list(grouped_data.keys())[-1] + h, 2)]
     plt.xticks(xticks, xticks)
+
+    plt.savefig(f'graph.png')
     plt.show()
 
 
