@@ -44,19 +44,18 @@ def main():
     print('СКО:', dispersion ** 0.5)
 
     print()
-    f, axs = plt.subplots(2, 2, figsize=(6, 7))
-    print(len(axs))
+    plt.subplots(2, 2, figsize=(6, 7))
     plt.subplot(5, 1, 1)
     plt.title('Эмпирическая функции распределения')
     n, keys, y = len(count_set), list(count_set.keys()), 0
 
     print('Эмпирическая функция:')
-    print(f'{y:.2f}, при x <= {keys[0]}')
+    print(f'0, при x <= {keys[0]}')
     for i in range(n - 1):
-        y += count_set[keys[i]] / n if i < n else 0
+        y += count_set[keys[i]] / len(input_data)
         print(f'{y:.2f}, при {keys[i]} < x <= {keys[i + 1]}')
         plt.plot([keys[i], keys[i + 1]], [y, y], c='orange')
-    print(f'{y:.2f}, при {keys[-1]} < x')
+    print(f'1, при x > {keys[-1]}')
 
     print()
     print('Интервальное статистическое распределение:')
@@ -66,9 +65,9 @@ def main():
     grouped_data = {curr_x: 0}
     for x in srtd_data:
         if x < next_x:
-            grouped_data[curr_x] += 1 / n
+            grouped_data[curr_x] += 1 / len(input_data)
         else:
-            grouped_data[next_x] = 1 / n
+            grouped_data[next_x] = 1 / len(input_data)
             curr_x = next_x
             next_x = round(next_x + h, 2)
     static_table = PrettyTable()
